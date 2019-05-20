@@ -1,0 +1,12 @@
+ - Executing mongo
+/home/marco/mongodb/bin/mongod --dbpath=/home/marco/mongodb-data
+
+ - Shutting down mongodb proccesses
+sudo killall -15 mongod
+
+ - Mongodb version
+db.version()
+
+ -  API documentation
+ http://mongodb.github.io/node-mongodb-native/3.2/api/index.html
+ 

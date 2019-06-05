@@ -43,8 +43,8 @@ MongoClient.connect(connectionURL, { useNewUrlParser: true }, (error, client) =>
     // })
 
     // FIND MANY USER (Receives a cursor and  don't have a callback)
-    db.collection('users').find({ age: 23}).toArray((error, documents) => {
-        if (error) return console.log('Unable to fetch')  
-        console.log(documents)      
-    })
+    // db.collection('users').find({ age: 23}).toArray((error, documents) => {
+    //     if (error) return console.log('Unable to fetch')  
+    //     console.log(documents)      
+    // })
 })

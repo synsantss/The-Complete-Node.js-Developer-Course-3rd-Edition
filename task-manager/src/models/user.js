@@ -70,7 +70,7 @@ userSchema.virtual("tasks", {
 // Methods are accessibles on the instances - dont use arrow function
 userSchema.methods.generateAuthToken = async function() {
   const user = this;
-  const token = jwt.sign({ _id: user._id.toSring() }, "thisismynewcourse", {
+  const token = jwt.sign({ _id: user._id.toSring() }, process.env.JWT_SECRET, {
     expiresIn: "7 days"
   });
   user.token = user.tokens.concat({ token });
@@ -113,7 +113,6 @@ userSchema.pre("remove", async function(next) {
 });
 
 //userSchema.post()
-
 const User = mongoose.model("User", userSchema);
 
 module.exports = User;

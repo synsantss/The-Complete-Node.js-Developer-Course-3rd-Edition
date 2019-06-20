@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const http = require("http");
 const socketio = require("socket.io");
+const Filter = require("bad-words");
 
 const app = express();
 const server = http.createServer(app);
@@ -12,24 +13,25 @@ const staticSource = path.join(__dirname, "../public");
 
 app.use(express.static(staticSource));
 
-let count = 0;
-
-// server (emit) -> client (receive) - countUpdated
-// client (emit) -> server (receive) - increment
-// Socket is an object that contains informatios about the connecion (new connection)
 io.on("connection", socket => {
-  // Sends data to the client
-  console.log("Socket up!");
-  socket.emit("countUpdated", count);
+  // Client
+  socket.emit("message", "Welcome to the server!");
 
-  // Receives a message from the cient and responds it
-  socket.on("increment", () => {
-    count++;
-    // Message to the single connecion
-    //socket.emit("countUpdated", count);
+  // Everyone except the user
+  socket.broadcast.emit("message", "New user on the server!");
 
-    // Message all connections
-    io.emit("countUpdated", count);
+  socket.on("sendMessage", (message, callback) => {
+    const filter = new Filter();
+    if (filter.isProfane(message)) return callback("Profanity is not allowed!");
+
+    // Everyone
+    io.emit("message", message);
+    callback(message);
+  });
+
+  // When a client goes away
+  socket.on("disconnect", () => {
+    io.emit("message", "A user has left :(");
   });
 });
 

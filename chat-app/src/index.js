@@ -3,6 +3,12 @@ const path = require("path");
 const http = require("http");
 const socketio = require("socket.io");
 const Filter = require("bad-words");
+const {
+  addUser,
+  removeUser,
+  getUser,
+  getUsersInRoom
+} = require("./utils/user");
 
 const app = express();
 const server = http.createServer(app);
@@ -13,12 +19,34 @@ const staticSource = path.join(__dirname, "../public");
 
 app.use(express.static(staticSource));
 
+// socket.emit -> The user
+// io.emit -> Everyone
+// sockek.broadcast.emit -> Everyone except the user
+// io.to.emit -> Everybody in specific group
+// sockek.broadcast.to().emit -> Everyone in specific group except the user
+
 io.on("connection", socket => {
   // Client
   socket.emit("message", "Welcome to the server!");
 
   // Everyone except the user
   socket.broadcast.emit("message", "New user on the server!");
+
+  socket.on("join", ({ username, room }, callback) => {
+    const { error, user } = addUser({ id: socket.id, username, room });
+
+    if (error) {
+      return callback(error);
+    }
+
+    socket.join(user.room);
+
+    socket.emit("message", "Welcome to the group!");
+    socket.broadcast
+      .to(user.room)
+      .emit("message", `${user.username} has joined the group!`);
+    callback();
+  });
 
   socket.on("sendMessage", (message, callback) => {
     const filter = new Filter();
@@ -31,7 +59,10 @@ io.on("connection", socket => {
 
   // When a client goes away
   socket.on("disconnect", () => {
-    io.emit("message", "A user has left :(");
+    const user = removeUser(socket.id);
+    if (user) {
+      io.to(user.room).emit("message", `${user.username} has left :(`);
+    }
   });
 });
 

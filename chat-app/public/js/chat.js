@@ -1,12 +1,23 @@
 const socket = io();
 
 // Elements
-const $messageForm = document.querySelector("message-form");
-const $messageFormInput = document.querySelector("input");
-const $messageFormButton = document.querySelector("button");
+const $messageForm = document.querySelector("#message-form");
+const $messageFormInput = $messageForm.querySelector("input");
+const $messageFormButton = $messageForm.querySelector("button");
+const $messages = document.querySelector("#messages");
+
+// Templates
+const messageTemplate = document.querySelector("#message-template").innerHTML;
 
 socket.on("message", message => {
   console.log(message);
+  const html = Mustache.render(messageTemplate, { message });
+  $messages.insertAdjacentHTML("beforeend", html);
+});
+
+// Options
+const { username, room } = Qs.parse(location.search, {
+  ignoreQueryPrefix: true
 });
 
 document.querySelector("#message-form").addEventListener("submit", e => {
@@ -31,4 +42,11 @@ document.querySelector("#send-location").addEventListener("click", () => {
   navigator.geolocation.getCurrentPosition(position => {
     console.log(position);
   });
+});
+
+socket.emit("join", { username, room }, error => {
+  if (error) {
+    alert(error);
+    location.href = "/";
+  }
 });

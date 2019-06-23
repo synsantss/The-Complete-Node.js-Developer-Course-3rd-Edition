@@ -49,11 +49,12 @@ io.on("connection", socket => {
   });
 
   socket.on("sendMessage", (message, callback) => {
+    const user = getUser(socket.id);
     const filter = new Filter();
     if (filter.isProfane(message)) return callback("Profanity is not allowed!");
 
     // Everyone
-    io.emit("message", message);
+    io.to(user.room).emit("message", message);
     callback(message);
   });
 
